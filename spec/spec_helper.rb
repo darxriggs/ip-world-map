@@ -8,4 +8,5 @@ end
 
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 
+require 'apache_log_analyzer'
 require 'visualization'
