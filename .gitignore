@@ -1,3 +1,4 @@
 *.swp
-NS2_FILES
 nbproject
+pkg
+resources/NS2_FILES

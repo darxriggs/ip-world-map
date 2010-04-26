@@ -15,3 +15,4 @@ describe PointInTime do
     decay.value(2).should be 0 # todo
   end
 end
+

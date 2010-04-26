@@ -1,30 +1,13 @@
-#!/usr/bin/env ruby
-
-require 'zlib'
 require 'time'
 require 'date'
 require 'net/http'
 require 'yaml'
 
-module FileUtils
-  def self.zipped? filename
-    %w[.gz .Z].include? File.extname(filename)
-  end
-
-  def self.open (filename, &block)
-    if zipped? filename
-      Zlib::GzipReader.open(filename, &block)
-    else
-      File.open(filename, &block)
-    end
-  end
-end
-
-
 class LogAnalyzer
   attr_accessor :host_coordinates
 
   def initialize *filenames
+    @COORDINATES_FILE = File.join(File.dirname(__FILE__), '..', '..', 'resources', 'coordinates.yml') 
     @filenames = filenames.flatten.sort.uniq
     @host_coordinates = {}
     @host_ips = {}
@@ -75,12 +58,12 @@ class LogAnalyzer
     details
   end
 
-  def save_coordinates_to_file filename = 'coordinates.yml'
+  def save_coordinates_to_file filename = @COORDINATES_FILE
     File.open(filename, 'w'){ |f| f.write @host_coordinates.to_yaml }
   end
 
-  def load_cached_coordinates_from_file filename = 'coordinates.yml'
-    @host_coordinates = YAML.load_file(filename)
+  def load_cached_coordinates_from_file filename = @COORDINATES_FILE
+    @host_coordinates = YAML.load_file(filename) if File.readable? filename
   end
 
   def stats
@@ -110,45 +93,5 @@ class LogAnalyzer
   def calculate_slot_start_time time, slot_in_seconds
     Time.at(time.tv_sec - (time.tv_sec % slot_in_seconds))
   end
-end
-
-
-class ApacheLogAnalyzer < LogAnalyzer
-  def initialize *filenames
-    super
-    @@host_regex = /^([\w.-]+)/
-    @@time_regex = /\[(\d{2})\/([a-zA-Z]{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) [+-](\d{2})(\d{2})\]/
-  end
-
-  def extract_host_from_line line
-    # IP: "123.1.2.3" or HOSTNAME: "hostname.domain"
-    host = $1 if line =~ @@host_regex
-  end
-
-  def extract_time_from_line line
-    # CLF format: "[dd/MMM/yyyy:hh:mm:ss +-hhmm]"
-
-    # TODO: add timezone information
-    #dd, mmm, yyyy, hh, mm, ss, tz_hh, tz_mm = $1, $2, $3, $4, $5, $6, $7, $8 if line =~ @@time_regex
-    #Time.utc(yyyy, mmm, dd, hh.to_i - tz_hh.to_i, mm, ss)
-    dd, mmm, yyyy, hh, mm, ss = $1, $2, $3, $4, $5, $6 if line =~ @@time_regex
-    Time.utc(yyyy, mmm, dd, hh, mm, ss)
-  end
-end
-
-
-if $0 ==  __FILE__
-  log_files = Dir.glob(ARGV)
-  if (log_files.empty?) then puts 'no files given'; exit(1) end
-  
-  analyzer = ApacheLogAnalyzer.new(log_files)
-  analyzer.load_cached_coordinates_from_file
-
-  details = analyzer.analyze
-  details_per_timeslot = analyzer.group_by_time(details, 24 * 60 * 60)
-
-  p analyzer.stats
-  p "timeslots: #{details_per_timeslot.size}"
-  details_per_timeslot.sort().each{ |timeslot, values| p "#{timeslot}: #{values.size} entries" }
 end
 
