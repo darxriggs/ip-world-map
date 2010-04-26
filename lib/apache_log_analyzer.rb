@@ -79,7 +79,7 @@ class LogAnalyzer
     File.open(filename, 'w'){ |f| f.write @host_coordinates.to_yaml }
   end
 
-  def load_coordinates_from_file filename = 'coordinates.yml'
+  def load_cached_coordinates_from_file filename = 'coordinates.yml'
     @host_coordinates = YAML.load_file(filename)
   end
 
@@ -89,30 +89,25 @@ class LogAnalyzer
     { :unknown_coordinates => unknown_coordinates.size, :known_coordinates => known_coordinates.size }
   end
 
+  def calculate_oldest_time details
+    details.min{ |a, b| a[:time] <=> b[:time] }[:time]
+  end
+
   def group_by_time details, slot_in_seconds
-    latest_time = details.min{ |a,b| a[:time] <=> b[:time] }[:time]
-    slot_time = slot_start_time(latest_time, slot_in_seconds)
+    return {} unless details && slot_in_seconds
     details_per_slot = {}
 
-    # quite slow algorithm
-#    while details.count > 0 do
-#      slot_cap_time = slot_time + slot_in_seconds
-#      details_in_slot, details = details.partition{ |data| data[:time] < slot_cap_time }
-#      details_per_slot[slot_time] = details_in_slot
-#      slot_time = slot_cap_time
-#    end
-
     # TODO: maybe assign empty arrays to missing slots where no traffic was detected
-    details.each do |data|
-      time = slot_start_time(data[:time], slot_in_seconds)
-      details_per_slot[time] = [] unless details_per_slot[time]
-      details_per_slot[time] << data
+    details.each do |detail|
+      slot_start_time = calculate_slot_start_time(detail[:time], slot_in_seconds)
+      details_per_slot[slot_start_time] ||= []
+      details_per_slot[slot_start_time] << detail
     end
 
     details_per_slot
   end
 
-  def slot_start_time time, slot_in_seconds
+  def calculate_slot_start_time time, slot_in_seconds
     Time.at(time.tv_sec - (time.tv_sec % slot_in_seconds))
   end
 end
@@ -131,13 +126,9 @@ class ApacheLogAnalyzer < LogAnalyzer
   end
 
   def extract_time_from_line line
-    # CLF format: "[dd/MMM/yyyy:hh:mm:ss +-hhmm]" => parsable format: "dd/MMM/yyyy hh:mm:ss +-hhmm"
+    # CLF format: "[dd/MMM/yyyy:hh:mm:ss +-hhmm]"
 
-  # 1. quite slow
-  #  time_string = line.scan(/\[[\w\/:+ ]+\]/).first[1...-1].sub(':', ' ')
-  #  Time.parse(time_string)
-
-  # 2. TODO: add timezone information
+    # TODO: add timezone information
     #dd, mmm, yyyy, hh, mm, ss, tz_hh, tz_mm = $1, $2, $3, $4, $5, $6, $7, $8 if line =~ @@time_regex
     #Time.utc(yyyy, mmm, dd, hh.to_i - tz_hh.to_i, mm, ss)
     dd, mmm, yyyy, hh, mm, ss = $1, $2, $3, $4, $5, $6 if line =~ @@time_regex
@@ -147,13 +138,17 @@ end
 
 
 if $0 ==  __FILE__
-  analyzer = ApacheLogAnalyzer.new(Dir.glob(ARGV))
-  analyzer.load_coordinates_from_file
+  log_files = Dir.glob(ARGV)
+  if (log_files.empty?) then puts 'no files given'; exit(1) end
+  
+  analyzer = ApacheLogAnalyzer.new(log_files)
+  analyzer.load_cached_coordinates_from_file
 
   details = analyzer.analyze
-  details_per_slot = analyzer.group_by_time(details, 24 * 60 * 60)
+  details_per_timeslot = analyzer.group_by_time(details, 24 * 60 * 60)
 
   p analyzer.stats
-  details_per_slot.sort().each{ |slot, values| p "#{slot}: #{values.size}" }
-  p details_per_slot.size
+  p "timeslots: #{details_per_timeslot.size}"
+  details_per_timeslot.sort().each{ |timeslot, values| p "#{timeslot}: #{values.size} entries" }
 end
+
