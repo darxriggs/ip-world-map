@@ -6,6 +6,6 @@ rescue LoadError
   require 'spec'
 end
 
-$:.unshift(File.dirname(__FILE__) + '/../lib')
+$:.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'ip-world-map'
 
