@@ -1,26 +1,13 @@
-#!/usr/bin/env ruby
-
 require 'rubygems'
 require 'ip-world-map'
 require 'ostruct'
 require 'RMagick'
+require 'optparse'
+require 'rdoc/usage'
 
 #coordinates_home = [11.6220338, 48.1276458] # Munich
 #coordinates_home = [13.4114943, 52.5234802] # Berlin
 #coordinates_home = [12.3387844, 45.4343363] # Venezia
-
-$visualization_config = OpenStruct.new({
-    :map_filename       => File.join(File.dirname(__FILE__), '..' , 'resources', 'maps', 'earthmap-1920x960.tif'),
-    :map_width          => 800,
-    :map_height         => 400,
-    :group_seconds      => 24 * 1 * 60 * 60,
-    :frames_per_second  => 24,
-    :fill_dot_color     => 'red',
-    :fill_dot_scale     => 10,
-    :fill_dot_opacity   => 1.0,
-    :fill_dot_lifetime  => 15,
-    :time_format        => nil,
-})
 
 def draw_info_background draw, size
     width, height = size[:width], size[:height]
@@ -47,7 +34,7 @@ end
 
 def detect_time_format times
     some_samples = times.sort[0..99]
-    smallest_period = some_samples.each_cons(2).collect{ |time1, time2| (time1 - time2).abs }.min
+    smallest_period = some_samples.each_cons(2).collect{ |time1, time2| (time1 - time2).abs }.min || 1
 
     return '%b %d %Y %H:%M' if smallest_period <  3600 # scale: minutes
     return '%b %d %Y %H:00' if smallest_period < 86400 # scale: hours
@@ -62,8 +49,8 @@ def show_some_random_points
     visualization.display
 end
 
-def access_image
-    analyzer = ApacheLogAnalyzer.new(Dir.glob(ARGV))
+def access_image(log_files)
+    analyzer = ApacheLogAnalyzer.new(log_files)
     analyzer.load_cached_coordinates_from_file
     details = analyzer.analyze
     positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
@@ -72,8 +59,8 @@ def access_image
     visualization.draw_positions(positions).display
 end
 
-def access_animation
-    analyzer = ApacheLogAnalyzer.new(Dir.glob(ARGV))
+def access_animation(log_files)
+    analyzer = ApacheLogAnalyzer.new(log_files)
     analyzer.load_cached_coordinates_from_file
     details = analyzer.analyze
     grouped_details = analyzer.group_by_time(details, $visualization_config.group_seconds)
@@ -82,7 +69,7 @@ def access_animation
     visualization = Visualization.new
     time_format = $visualization_config.time_format || detect_time_format(grouped_details.keys)
 
-    grouped_details.sort().each do |time, details|
+    grouped_details.sort.each do |time, details|
         visualization.new_frame
         positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
         p [time, details.size, positions.size]
@@ -94,14 +81,17 @@ def access_animation
 
     animation.delay = 1000 / ($visualization_config.frames_per_second * 10)
 #    animation.each_with_index{ |img, idx| p img; img.write("tng.#{'%03i' % idx}.jpg") }
-#    animation.write "tng.gif"
+#    animation.write 'tng.gif'
     animation.animate
 end
 
-log_files = Dir.glob(ARGV)
-if (log_files.empty?) then puts 'no files given'; exit(1) end
-
-#show_some_random_points
-#access_image
-access_animation
+def visualize(log_files)
+    if $visualization_config.video_format
+      access_animation(log_files)
+    elsif $visualization_config.image_format
+      access_image(log_files)
+    else 
+      show_some_random_points
+    end
+end
 

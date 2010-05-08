@@ -1,0 +1,220 @@
+#!/usr/bin/env ruby
+
+# == Synopsis
+#   This application can be used to visualize web access logfiles.
+#   It performs geo-location resolution on the IPs and can generate:
+#   - a fixed image
+#   - an animated image
+#   - a video
+#
+# == Examples
+#   The script generates an animated gif with 640x480 and 25fps (default settings).
+#     visualize_access_locations /var/log/apache2/access.log*
+#
+# == Usage
+#   visualize_access_locations [options] log_file1 [logfile2] ...
+#
+#   For help use: visualize_access_locations -h
+#
+# == Options
+#   -h, --help              Displays help message
+#       --version           Display the version, then exit
+#   -v, --verbose           Verbose output
+#       --image-format      (eg.: png, gif, jpeg)
+#       --resolution        (eg.: 640x480)
+#       --video-format      (eg.: avi, mpg, mov)
+#       --fps               (eg.: 25)
+#       --fill-dot-color    (eg.: red, 'rgb(255,0,0)', '#FF0000')
+#       --fill-dot-scale    (eg.: 10.0)
+#       --fill-dot-opacity  range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
+#       --fill-dot-lifetime (eg.: 15)
+#       --time-format       gets auto-detected if not specified
+#       --time-slot         real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
+#       --image-format      (eg.: gif, png, jpg)
+#       --video-format      (eg.: avi, mpg)
+#
+# == Author
+#   René Scheibe
+#
+# == Copyright
+#   Copyright (c) 2010 René Scheibe. Licensed under the MIT License:
+#   http://www.opensource.org/licenses/mit-license.php
+
+require 'rubygems'
+require 'RMagick'
+require 'optparse'
+require 'rdoc/usage'
+require 'ostruct'
+require 'date'
+require File.join(File.dirname(__FILE__), 'apache_log_visualizer')
+
+class App
+  VERSION = '0.0.1'
+
+  attr_reader :options
+
+  def initialize(arguments, stdin)
+    @arguments = arguments
+    @stdin = stdin
+
+    set_defaults
+  end
+
+  def run
+    if parsed_options? && arguments_valid?
+      puts "Start at #{DateTime.now}\n\n" if @options.verbose
+      output_options if @options.verbose
+      process_arguments
+      process_command
+      puts "\nFinished at #{DateTime.now}" if @options.verbose
+    else
+      output_usage
+    end
+  end
+
+  protected
+
+  def set_defaults
+    @options = OpenStruct.new({
+      :verbose            => false,
+      :quiet              => false,
+      :map_filename       => File.join(File.dirname(__FILE__), '..' , 'resources', 'maps', 'earthmap-1920x960.tif'),
+      :map_width          => 800,
+      :map_height         => 400,
+      :frames_per_second  => 25,
+      :fill_dot_color     => 'red',
+      :fill_dot_scale     => 10,
+      :fill_dot_opacity   => 1.0,
+      :fill_dot_lifetime  => 15,
+      :time_format        => nil,
+      :group_seconds      => 24 * 1 * 60 * 60,
+      :image_format       => nil,
+      :video_format       => 'gif',
+      :start_time         => nil,
+      :stop_time          => nil,
+    })
+  end
+
+  def parsed_options?
+    opts = OptionParser.new
+
+    opts.on('--version') { output_version; exit 0 }
+    opts.on('-h', '--help') { output_help }
+    opts.on('-v', '--verbose') { @options.verbose = true }
+
+    opts.on('--map-filename VALUE') do |filename|
+      raise 'invalid map file' unless File.readable? filename
+      @options.map_filename = filename
+    end
+
+    opts.on('--resolution VALUE') do |resolution|
+      raise 'invalid resolution format (see help for examples)' unless resolution =~ /^[0-9]+x[0-9]+$/
+      width, height = resolution.split('x').collect{|v| v.to_i}
+      @options.map_width  = width
+      @options.map_height = height
+    end
+
+    opts.on('--fps VALUE') do |fps|
+      raise 'invalid fps format (see help for examples)' unless fps =~ /^[1-9][0-9]*$/
+      @options.frames_per_second = fps.to_i
+    end
+
+    opts.on('--fill-dot-color VALUE') do |color|
+      Magick::Pixel.from_color color rescue raise 'invalid color (see help for examples)'
+      @options.fill_dot_color = color
+    end
+
+    opts.on('--fill-dot-scale VALUE') do |scale|
+      raise 'invalid dot scale (see help for examples)' unless scale =~ /^[1-9][0-9]*([.][0-9]*)?$/
+      @options.fill_dot_scale = scale.to_f
+    end
+
+    opts.on('--fill-dot-opacity VALUE') do |opacity|
+      raise 'invalid dot opacity (see help for examples)' unless opacity =~ /^(0([.][0-9]*)?|1([.]0*)?)$/
+      @options.fill_dot_opacity = opacity.to_f
+    end
+
+    opts.on('--fill-dot-lifetime VALUE') do |lifetime|
+      raise 'invalid dot lifetime (see help for examples)' unless lifetime =~ /^[1-9][0-9]*$/
+      @options.fill_dot_lifetime = lifetime.to_i
+    end
+
+    opts.on('--time-slot VALUE') do |slot|
+        raise 'invalid time slot (see help for examples)' unless slot =~ /^[1-9][0-9]*(sec|min|hour|day)s?$/
+        value = slot.scan(/[0-9]+/)[0].to_i
+        unit  = slot.scan(/[a-z]+[^s]/)[0]
+        unit2secs = {'sec' => 1, 'min' => 60, 'hour' => 60*60, 'day' => 24*60*60}
+        @options.group_seconds = value * unit2secs[unit]
+    end
+
+#   opts.on('--time-format')       { |v| @options.time_format = v }
+
+    opts.on('--image-format VALUE') do |format|
+        # TODO: validation
+        @options.image_format = format
+    end
+
+    opts.on('--video-format VALUE') do |format|
+        # TODO: validation
+        @options.video_format = format
+    end
+
+    opts.parse!(@arguments)# rescue return false
+    process_options
+    true
+  end
+
+  # Performs post-parse processing on options
+  def process_options
+    $visualization_config = @options
+  end
+
+  def output_options
+    puts "Options:\n"
+    @options.marshal_dump.sort{|a,b| a[0].to_s <=> b[0].to_s}.each do |name, val|
+      puts "  #{name} = #{val}"
+    end
+  end
+
+  # True if required arguments were provided
+  def arguments_valid?
+    # TO DO - implement your real logic here
+    true if @arguments.length == 1
+  end
+
+  # Setup the arguments
+  def process_arguments
+    # TO DO - place in local vars, etc
+  end
+
+  def output_help
+    output_version
+    RDoc::usage() #exits app
+  end
+
+  def output_usage
+    RDoc::usage('usage') # gets usage from comments above
+  end
+
+  def output_version
+    puts "#{File.basename(__FILE__)} version #{VERSION}"
+  end
+
+  def process_command
+    # TO DO - do whatever this app does
+    #process_standard_input # [Optional]
+    log_files = Dir.glob(ARGV)
+    if (log_files.empty?) then puts 'no files given'; output_help end
+    visualize log_files
+  end
+
+  def process_standard_input
+    input = @stdin.read
+    # TO DO - process input
+  end
+end
+
+# Create and run the application
+app = App.new(ARGV, STDIN)
+app.run
+
