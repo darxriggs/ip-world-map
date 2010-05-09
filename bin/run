@@ -90,8 +90,6 @@ class App
       :group_seconds      => 24 * 1 * 60 * 60,
       :image_format       => nil,
       :video_format       => 'gif',
-      :start_time         => nil,
-      :stop_time          => nil,
     })
   end
 
@@ -182,7 +180,6 @@ class App
     true if @arguments.length == 1
   end
 
-  # Setup the arguments
   def process_arguments
     # TO DO - place in local vars, etc
   end
