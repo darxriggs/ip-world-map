@@ -158,6 +158,11 @@ class App
     end
 
     opts.parse!(@arguments)# rescue return false
+
+    @log_files = Dir.glob(@arguments)
+    raise 'no log files given' if @log_files.empty?
+    raise 'invalid log file given' unless @log_files.all?{|file| File.readable? file}
+
     process_options
     true
   end
@@ -200,9 +205,7 @@ class App
   def process_command
     # TO DO - do whatever this app does
     #process_standard_input # [Optional]
-    log_files = Dir.glob(ARGV)
-    if (log_files.empty?) then puts 'no files given'; output_help end
-    visualize log_files
+    visualize @log_files
   end
 
   def process_standard_input
