@@ -19,7 +19,7 @@ spec = Gem::Specification.new do |s|
   s.requirements << 'RMagick'
   s.require_path = 'lib'
   s.bindir = 'bin'
-  s.executables = ['apache_log_analyzer', 'apache_log_visualizer']
+  s.executables = ['logfile_visualizer']
   s.files = FileList['{lib,spec,features}/**/*'].to_a +
             ['Rakefile'] + 
             ['resources/maps/earthmap-1920x960.tif']

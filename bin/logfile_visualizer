@@ -41,12 +41,11 @@
 #   http://www.opensource.org/licenses/mit-license.php
 
 require 'rubygems'
-require 'RMagick'
 require 'optparse'
-require 'rdoc/usage'
 require 'ostruct'
+require 'rdoc/usage'
 require 'date'
-require File.join(File.dirname(__FILE__), 'apache_log_visualizer')
+require 'ip-world-map'
 
 class App
   VERSION = '0.0.1'
