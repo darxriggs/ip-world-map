@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'spec/version'
 require 'spec/rake/spectask'
-#require 'cucumber/rake/task'
 require 'rake/gempackagetask'
 
 Spec::Rake::SpecTask.new(:spec) do |t|
@@ -19,12 +18,13 @@ spec = Gem::Specification.new do |s|
   s.requirements << 'RMagick'
   s.require_path = 'lib'
   s.bindir = 'bin'
-  s.executables = ['logfile_visualizer']
-  s.files = FileList['{lib,spec,features}/**/*'].to_a +
+  s.executables = ['ip-world-map']
+  s.files = FileList['{lib,spec}/**/*'].to_a +
             ['Rakefile'] + 
             ['resources/maps/earthmap-1920x960.tif']
   s.description = s.summary
   s.author = 'Rene Scheibe'
+  s.email = 'rene.scheibe@gmail.com'
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
