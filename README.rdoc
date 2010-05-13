@@ -46,11 +46,11 @@ For help use: ip-world-map -h
 
 == Author
 
-Rene Scheibe
+René Scheibe
 
 == License:
 
-Copyright (C) 2010 Rene Scheibe <rene.scheibe@gmail.com>
+Copyright (C) 2010 René Scheibe <rene.scheibe@gmail.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

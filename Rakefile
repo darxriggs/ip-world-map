@@ -23,7 +23,7 @@ spec = Gem::Specification.new do |s|
             ['Rakefile'] + 
             ['resources/maps/earthmap-1920x960.tif']
   s.description = s.summary
-  s.author = 'Rene Scheibe'
+  s.author = 'René Scheibe'
   s.email = 'rene.scheibe@gmail.com'
 end
 
