@@ -1,4 +1,7 @@
 *.swp
-nbproject
-pkg
-resources/NS2_FILES
+backup/
+nbproject/
+pkg/
+resources/logs/
+resources/misc/
+resources/coordinates.yml
