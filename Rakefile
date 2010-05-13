@@ -24,7 +24,7 @@ spec = Gem::Specification.new do |s|
             ['Rakefile'] + 
             ['resources/maps/earthmap-1920x960.tif']
   s.description = s.summary
-  s.author = 'René Scheibe'
+  s.author = 'Rene Scheibe'
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
