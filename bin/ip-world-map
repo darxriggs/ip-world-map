@@ -1,49 +1,8 @@
 #!/usr/bin/env ruby
 
-# == Synopsis
-#   This application can be used to visualize web access logfiles.
-#   It performs geo-location resolution on the IPs and can generate:
-#   - a fixed image
-#   - an animated image
-#   - a video
-#
-# == Examples
-#   The script generates an animated gif with 640x480 and 25fps (default settings).
-#     visualize_access_locations /var/log/apache2/access.log*
-#
-# == Usage
-#   visualize_access_locations [options] log_file1 [logfile2] ...
-#
-#   For help use: visualize_access_locations -h
-#
-# == Options
-#   -h, --help              Displays help message
-#       --version           Display the version, then exit
-#   -v, --verbose           Verbose output
-#       --image-format      (eg.: png, gif, jpeg)
-#       --resolution        (eg.: 640x480)
-#       --video-format      (eg.: avi, mpg, mov)
-#       --fps               (eg.: 25)
-#       --fill-dot-color    (eg.: red, 'rgb(255,0,0)', '#FF0000')
-#       --fill-dot-scale    (eg.: 10.0)
-#       --fill-dot-opacity  range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
-#       --fill-dot-lifetime (eg.: 15)
-#       --time-format       gets auto-detected if not specified
-#       --time-slot         real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
-#       --image-format      (eg.: gif, png, jpg)
-#       --video-format      (eg.: avi, mpg)
-#
-# == Author
-#   René Scheibe
-#
-# == Copyright
-#   Copyright (c) 2010 René Scheibe. Licensed under the MIT License:
-#   http://www.opensource.org/licenses/mit-license.php
-
 require 'rubygems'
 require 'optparse'
 require 'ostruct'
-require 'rdoc/usage'
 require 'date'
 require 'ip-world-map'
 
@@ -67,7 +26,8 @@ class App
       process_command
       puts "\nFinished at #{DateTime.now}" if @options.verbose
     else
-      output_usage
+      output_help
+      exit 1
     end
   end
 
@@ -93,76 +53,93 @@ class App
   end
 
   def parsed_options?
-    opts = OptionParser.new
+    @opts = opts = OptionParser.new
 
-    opts.on('--version') { output_version; exit 0 }
-    opts.on('-h', '--help') { output_help }
-    opts.on('-v', '--verbose') { @options.verbose = true }
+    opts.banner = 'Usage: ip-world-map [options] log_file1 [logfile2] ...'
 
-    opts.on('--map-filename VALUE') do |filename|
+    opts.on('--version', 'Display the version') do
+      output_version
+      exit 0
+    end
+
+    opts.on('-h', '--help', 'Display this help message') do
+      output_help
+      exit 0
+    end
+
+    opts.on('-v', '--verbose', 'Verbose output') do
+      @options.verbose = true
+    end
+
+    opts.on('--map-filename VALUE', 'The image to use as background') do |filename|
       raise 'invalid map file' unless File.readable? filename
       @options.map_filename = filename
     end
 
-    opts.on('--resolution VALUE') do |resolution|
-      raise 'invalid resolution format (see help for examples)' unless resolution =~ /^[0-9]+x[0-9]+$/
+    opts.on('--resolution VALUE', '(eg.: 640x480)') do |resolution|
+      raise 'invalid resolution format' unless resolution =~ /^[0-9]+x[0-9]+$/
       width, height = resolution.split('x').collect{|v| v.to_i}
       @options.map_width  = width
       @options.map_height = height
     end
 
-    opts.on('--fps VALUE') do |fps|
-      raise 'invalid fps format (see help for examples)' unless fps =~ /^[1-9][0-9]*$/
+    opts.on('--fps VALUE', 'Animation frames per second (eg.: 25)') do |fps|
+      raise 'invalid fps format' unless fps =~ /^[1-9][0-9]*$/
       @options.frames_per_second = fps.to_i
     end
 
-    opts.on('--fill-dot-color VALUE') do |color|
+    opts.on('--fill-dot-color VALUE', "(eg.: red, 'rgb(255,0,0)', '#FF0000')") do |color|
       Magick::Pixel.from_color color rescue raise 'invalid color (see help for examples)'
       @options.fill_dot_color = color
     end
 
-    opts.on('--fill-dot-scale VALUE') do |scale|
-      raise 'invalid dot scale (see help for examples)' unless scale =~ /^[1-9][0-9]*([.][0-9]*)?$/
+    opts.on('--fill-dot-scale VALUE', '(eg.: 10.0)') do |scale|
+      raise 'invalid dot scale' unless scale =~ /^[1-9][0-9]*([.][0-9]*)?$/
       @options.fill_dot_scale = scale.to_f
     end
 
-    opts.on('--fill-dot-opacity VALUE') do |opacity|
-      raise 'invalid dot opacity (see help for examples)' unless opacity =~ /^(0([.][0-9]*)?|1([.]0*)?)$/
+    opts.on('--fill-dot-opacity VALUE', 'range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)') do |opacity|
+      raise 'invalid dot opacity' unless opacity =~ /^(0([.][0-9]*)?|1([.]0*)?)$/
       @options.fill_dot_opacity = opacity.to_f
     end
 
-    opts.on('--fill-dot-lifetime VALUE') do |lifetime|
-      raise 'invalid dot lifetime (see help for examples)' unless lifetime =~ /^[1-9][0-9]*$/
+    opts.on('--fill-dot-lifetime VALUE', '(eg.: 15)') do |lifetime|
+      raise 'invalid dot lifetime' unless lifetime =~ /^[1-9][0-9]*$/
       @options.fill_dot_lifetime = lifetime.to_i
     end
 
-    opts.on('--time-slot VALUE') do |slot|
-        raise 'invalid time slot (see help for examples)' unless slot =~ /^[1-9][0-9]*(sec|min|hour|day)s?$/
-        value = slot.scan(/[0-9]+/)[0].to_i
-        unit  = slot.scan(/[a-z]+[^s]/)[0]
-        unit2secs = {'sec' => 1, 'min' => 60, 'hour' => 60*60, 'day' => 24*60*60}
-        @options.group_seconds = value * unit2secs[unit]
+    opts.on('--time-slot VALUE', 'real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)') do |slot|
+      raise 'invalid time slot' unless slot =~ /^[1-9][0-9]*(sec|min|hour|day)s?$/
+      value = slot.scan(/[0-9]+/)[0].to_i
+      unit  = slot.scan(/[a-z]+[^s]/)[0]
+      unit2secs = {'sec' => 1, 'min' => 60, 'hour' => 60*60, 'day' => 24*60*60}
+      @options.group_seconds = value * unit2secs[unit]
     end
 
-#   opts.on('--time-format')       { |v| @options.time_format = v }
+    # TODO
+    # opts.on('--time-format', 'gets auto-detected if not specified') { |v| @options.time_format = v }
 
-    opts.on('--image-format VALUE') do |format|
-        # TODO: validation
-        @options.image_format = format
+    opts.on('--image-format VALUE', '(eg.: png, gif, jpeg)') do |format|
+      # TODO: validation
+      @options.image_format = format
     end
 
-    opts.on('--video-format VALUE') do |format|
-        # TODO: validation
-        @options.video_format = format
+    opts.on('--video-format VALUE', '(eg.: avi, mpg, mov)') do |format|
+      # TODO: validation
+      @options.video_format = format
     end
 
-    opts.parse!(@arguments)# rescue return false
+    begin
+      opts.parse!(@arguments)
+      @log_files = Dir.glob(@arguments)
+      raise 'no log files given' if @log_files.empty?
+      raise 'invalid log file given' unless @log_files.all?{|file| File.readable? file}
+      process_options
+    rescue
+      puts 'Error: ' + $!
+      return false
+    end
 
-    @log_files = Dir.glob(@arguments)
-    raise 'no log files given' if @log_files.empty?
-    raise 'invalid log file given' unless @log_files.all?{|file| File.readable? file}
-
-    process_options
     true
   end
 
@@ -172,7 +149,7 @@ class App
   end
 
   def output_options
-    puts "Options:\n"
+    puts 'Options:'
     @options.marshal_dump.sort{|a,b| a[0].to_s <=> b[0].to_s}.each do |name, val|
       puts "  #{name} = #{val}"
     end
@@ -184,16 +161,11 @@ class App
   end
 
   def process_arguments
-    # TO DO - place in local vars, etc
+    # TODO - place in local vars, etc
   end
 
   def output_help
-    output_version
-    RDoc::usage() #exits app
-  end
-
-  def output_usage
-    RDoc::usage('usage') # gets usage from comments above
+    puts @opts.help
   end
 
   def output_version
@@ -201,14 +173,14 @@ class App
   end
 
   def process_command
-    # TO DO - do whatever this app does
+    # TODO - do whatever this app does
     #process_standard_input # [Optional]
     visualize @log_files
   end
 
   def process_standard_input
     input = @stdin.read
-    # TO DO - process input
+    # TODO - process input
   end
 end
 
