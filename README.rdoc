@@ -6,47 +6,50 @@ It performs geo-location resolution on the IPs and can generate:
 * an animated image
 * a video
 
-== Installation:
+== Installation
 
 Install [Gemcutter](http://gemcutter.org) then execute:
-  $ sudo gem install ip-world-map
+    sudo gem install ip-world-map
 
-== Supported platforms:
+== Supported platforms
 
 Tested with Ruby 1.8.7, 1.9.1 under *nix
 
-== Examples:
+== Examples
 
 The script generates an animated gif with 640x480 and 25fps (default settings).
-  $ ip-world-map /var/log/apache2/access.log*
+    ip-world-map /var/log/apache2/access.log*
 
 == Usage
 
-ip-world-map [options] log_file1 [logfile2] ...
+    ip-world-map [options] logfile1 [logfile2] ...
 
 == Options
 
--h, --help              Displays help message
-    --version           Display the version, then exit
--v, --verbose           Verbose output
-    --image-format      (eg.: png, gif, jpeg)
-    --resolution        (eg.: 640x480)
-    --video-format      (eg.: avi, mpg, mov)
-    --fps               (eg.: 25)
-    --fill-dot-color    (eg.: red, 'rgb(255,0,0)', '#FF0000')
-    --fill-dot-scale    (eg.: 10.0)
-    --fill-dot-opacity  range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
-    --fill-dot-lifetime (eg.: 15)
-    --time-format       gets auto-detected if not specified
-    --time-slot         real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
-    --image-format      (eg.: gif, png, jpg)
-    --video-format      (eg.: avi, mpg)
+        --version                    Display the version
+    -h, --help                       Display this help message
+    -v, --verbose                    Verbose output
+        --map-filename VALUE         The image to use as background
+        --resolution VALUE           (eg.: 640x480)
+        --fps VALUE                  Animation frames per second (eg.: 25)
+        --fill-dot-color VALUE       (eg.: red, 'rgb(255,0,0)', '#FF0000')
+        --fill-dot-scale VALUE       (eg.: 10.0)
+        --fill-dot-opacity VALUE     range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
+        --fill-dot-lifetime VALUE    (eg.: 15)
+        --time-slot VALUE            real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
+        --image-format VALUE         (eg.: png, gif, jpeg)
+        --video-format VALUE         (eg.: avi, mpg, mov)
+
+== TODO
+
+* Implement saving the image/video. At the moment it is only generated in memory and shown via RMagick.
+* Cache/parallelize IP geo-location lookups. ATTENTION: For many IPs generating an animation can take quite long at the moment due to the used webservice.
 
 == Author
 
 René Scheibe
 
-== License:
+== License
 
 Copyright (C) 2010 René Scheibe <rene.scheibe@gmail.com>
 
