@@ -1,0 +1,67 @@
+= IP World Map
+
+This tool can be used to visualize web access logfiles.
+It performs geo-location resolution on the IPs and can generate:
+* a fixed image
+* an animated image
+* a video
+
+== Installation:
+
+Install [Gemcutter](http://gemcutter.org) then execute:
+  $ sudo gem install ip-world-map
+
+== Supported platforms:
+
+Tested with Ruby 1.8.7, 1.9.1 under *nix
+
+== Examples:
+
+The script generates an animated gif with 640x480 and 25fps (default settings).
+  $ ip-world-map /var/log/apache2/access.log*
+
+== Usage
+
+ip-world-map [options] log_file1 [logfile2] ...
+
+For help use: ip-world-map -h
+
+== Options
+
+-h, --help              Displays help message
+    --version           Display the version, then exit
+-v, --verbose           Verbose output
+    --image-format      (eg.: png, gif, jpeg)
+    --resolution        (eg.: 640x480)
+    --video-format      (eg.: avi, mpg, mov)
+    --fps               (eg.: 25)
+    --fill-dot-color    (eg.: red, 'rgb(255,0,0)', '#FF0000')
+    --fill-dot-scale    (eg.: 10.0)
+    --fill-dot-opacity  range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
+    --fill-dot-lifetime (eg.: 15)
+    --time-format       gets auto-detected if not specified
+    --time-slot         real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
+    --image-format      (eg.: gif, png, jpg)
+    --video-format      (eg.: avi, mpg)
+
+== Author
+
+Rene Scheibe
+
+== License:
+
+Copyright (C) 2010 Rene Scheibe <rene.scheibe@gmail.com>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
