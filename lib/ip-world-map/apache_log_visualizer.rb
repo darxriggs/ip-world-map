@@ -2,29 +2,6 @@
 #coordinates_home = [13.4114943, 52.5234802] # Berlin
 #coordinates_home = [12.3387844, 45.4343363] # Venezia
 
-def draw_info_background draw, size
-    width, height = size[:width], size[:height]
-    draw.fill('grey')
-    draw.fill_opacity('50%')
-    draw.rectangle(0.2 * width, 0.9 * height, 0.8 * width, 0.9 * height + 30)
-end
-
-def draw_info_message draw, size, info
-    draw.fill('black')
-    draw.fill_opacity('100%')
-    draw.text_align(Magick::CenterAlign)
-    draw.pointsize(20)
-    draw.text(0.5 * size[:width], 0.9 * size[:height] + 20, info)
-end
-
-def draw_info image, visualization, info
-    draw = Magick::Draw.new
-    size = { :width => visualization.map_size[:width], :height => visualization.map_size[:height] }
-    draw_info_background(draw, size)
-    draw_info_message(draw, size, info)
-    draw.draw(image)
-end
-
 def detect_time_format times
     some_samples = times.sort[0..99]
     smallest_period = some_samples.each_cons(2).collect{ |time1, time2| (time1 - time2).abs }.min || 1
@@ -68,7 +45,7 @@ def access_animation(log_files)
         p [time, details.size, positions.size]
         image = visualization.draw_positions(positions)
 
-        draw_info(image, visualization, time.strftime(time_format))
+        InformationDrawer.new.draw_info(image, visualization, time.strftime(time_format))
         animation << image
     end
 
