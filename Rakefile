@@ -14,7 +14,7 @@ spec = Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.summary = 'A tool to generate images/videos of user locations based on Apache log files.'
   s.name = 'ip-world-map'
-  s.version = '0.1'
+  s.version = '0.0.1'
   s.requirements << 'RMagick'
   s.require_path = 'lib'
   s.bindir = 'bin'
