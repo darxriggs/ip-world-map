@@ -3,65 +3,68 @@
 #coordinates_home = [12.3387844, 45.4343363] # Venezia
 
 def detect_time_format times
-    some_samples = times.sort[0..99]
-    smallest_period = some_samples.each_cons(2).collect{ |time1, time2| (time1 - time2).abs }.min || 1
+  some_samples = times.sort[0..99]
+  smallest_period = some_samples.each_cons(2).collect{ |time1, time2| (time1 - time2).abs }.min || 1
 
-    return '%b %d %Y %H:%M' if smallest_period <  3600 # scale: minutes
-    return '%b %d %Y %H:00' if smallest_period < 86400 # scale: hours
-    return '%b %d %Y'                                  # scale: days
-end
-
-def show_some_random_points
-    logfile = LogfileMock.new
-    visualization = Visualization.new
-    visualization.position_quantization_in_degrees = 5.0
-    visualization.draw_positions(logfile.positions)
-    visualization.display
+  return '%b %d %Y %H:%M' if smallest_period <  3600 # scale: minutes
+  return '%b %d %Y %H:00' if smallest_period < 86400 # scale: hours
+  return '%b %d %Y'                                  # scale: days
 end
 
 def access_image(log_files)
-    analyzer = ApacheLogAnalyzer.new(log_files)
-    analyzer.load_cached_coordinates_from_file
-    details = analyzer.analyze
-    positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
+  analyzer = ApacheLogAnalyzer.new(log_files)
+  analyzer.load_cached_coordinates_from_file
+  details = analyzer.analyze
+  positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
 
-    visualization = Visualization.new
-    visualization.draw_positions(positions).display
+  visualization = Visualization.new
+  image = visualization.draw_positions(positions)
+  save_image image
 end
 
 def access_animation(log_files)
-    analyzer = ApacheLogAnalyzer.new(log_files)
-    analyzer.load_cached_coordinates_from_file
-    details = analyzer.analyze
-    grouped_details = analyzer.group_by_time(details, $visualization_config.group_seconds)
+  analyzer = ApacheLogAnalyzer.new(log_files)
+  analyzer.load_cached_coordinates_from_file
+  details = analyzer.analyze
+  grouped_details = analyzer.group_by_time(details, $visualization_config.group_seconds)
 
-    animation = Magick::ImageList.new
-    visualization = Visualization.new
-    time_format = $visualization_config.time_format || detect_time_format(grouped_details.keys)
+  animation = Magick::ImageList.new
+  visualization = Visualization.new
+  time_format = $visualization_config.time_format || detect_time_format(grouped_details.keys)
+  frame_number = 0
 
-    grouped_details.sort.each do |time, details|
-        visualization.new_frame
-        positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
-        p [time, details.size, positions.size]
-        image = visualization.draw_positions(positions)
+  grouped_details.sort.each do |time, details|
+    frame_number += 1
+    visualization.new_frame
+    positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
+    p [time, details.size, positions.size]
+    image = visualization.draw_positions(positions)
 
-        InformationDrawer.new.draw_info(image, visualization, time.strftime(time_format))
-        animation << image
-    end
+    InformationDrawer.new.draw_info(image, visualization, time.strftime(time_format))
+    save_image image, frame_number
+  end
 
-    animation.delay = 1000 / ($visualization_config.frames_per_second * 10)
-#    animation.each_with_index{ |img, idx| p img; img.write("tng.#{'%03i' % idx}.jpg") }
-#    animation.write 'tng.gif'
-    animation.animate
+  create_animation
+end
+
+def save_image(image, frame_number = 0)
+  if $visualization_config.animate
+    image.write "animation.#{'%09d' % frame_number}.bmp"
+  else
+    image.write "snapshot.#{$visualization_config.output_format}"
+  end
+end
+  
+def create_animation
+  success = system "ffmpeg -r #{$visualization_config.frames_per_second} -qscale 1 -y -i animation.%09d.bmp animation.#{$visualization_config.output_format}"
+  raise 'could not create the animation' unless success
 end
 
 def visualize(log_files)
-    if $visualization_config.video_format
-      access_animation(log_files)
-    elsif $visualization_config.image_format
-      access_image(log_files)
-    else 
-      show_some_random_points
-    end
+  if $visualization_config.animate
+    access_animation(log_files)
+  else
+    access_image(log_files)
+  end
 end
 

@@ -47,8 +47,8 @@ class App
       :fill_dot_lifetime  => 15,
       :time_format        => nil,
       :group_seconds      => 24 * 1 * 60 * 60,
-      :image_format       => nil,
-      :video_format       => 'gif',
+      :output_format      => 'gif',
+      :animate            => true
     })
   end
 
@@ -119,14 +119,18 @@ class App
     # TODO
     # opts.on('--time-format', 'gets auto-detected if not specified') { |v| @options.time_format = v }
 
-    opts.on('--image-format VALUE', '(eg.: png, gif, jpeg)') do |format|
-      # TODO: validation
-      @options.image_format = format
+    opts.on('--output-format VALUE', 'one out of many image formats (eg.: png, jpg, gif) or video formats: avi, mpg, mp4') do |format|
+      # accepted_formats = %w[png gif jpg tif bmp avi mpg mp4]
+      # raise 'invalid output format' unless accepted_formats.include? format
+      video_formats = %w[avi mpg mp4]
+      is_supported = Magick.formats.any?{ |supported_format, properties| supported_format.upcase == format.upcase && properties.include?('w') }
+      is_supported |= video_formats.any?{ |supported_format| supported_format.upcase == format.upcase }
+      raise 'invalid output format' unless is_supported
+      @options.output_format = format
     end
 
-    opts.on('--video-format VALUE', '(eg.: avi, mpg, mov)') do |format|
-      # TODO: validation
-      @options.video_format = format
+    opts.on('--[no-]animate', 'generate an image or a video') do |animate|
+      @options.animate = animate
     end
 
     begin
@@ -157,6 +161,10 @@ class App
 
   # True if required arguments were provided
   def arguments_valid?
+    video_formats = %w[avi mpg mp4]
+    is_video_format = video_formats.any?{ |video_format| video_format == @options.output_format.downcase }
+    return false if !@options.animate && is_video_format
+    return false if @options.animate && !is_video_format
     true
   end
 

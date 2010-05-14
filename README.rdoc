@@ -37,12 +37,11 @@ The script generates an animated gif with 640x480 and 25fps (default settings).
         --fill-dot-opacity VALUE     range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
         --fill-dot-lifetime VALUE    (eg.: 15)
         --time-slot VALUE            real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
-        --image-format VALUE         (eg.: png, gif, jpeg)
-        --video-format VALUE         (eg.: avi, mpg, mov)
+        --output-format VALUE        one out of many image formats (eg.: png, jpg, gif) or video formats: avi, mpg, mp4
+        --[no-]animate               generate an image or a video
 
 == TODO
 
-* Implement saving the image/video. At the moment it is only generated in memory and shown via RMagick.
 * Cache/parallelize IP geo-location lookups. ATTENTION: For many IPs generating an animation can take quite long at the moment due to the used webservice.
 
 == Author
