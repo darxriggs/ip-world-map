@@ -19,7 +19,7 @@ class App
   end
 
   def run
-    if parsed_options? && arguments_valid?
+    if parsed_arguments? && arguments_valid?
       puts "Start at #{DateTime.now}\n\n" if @options.verbose
       output_options if @options.verbose
       process_arguments
@@ -52,7 +52,7 @@ class App
     })
   end
 
-  def parsed_options?
+  def parsed_arguments?
     @opts = opts = OptionParser.new
 
     opts.banner = 'Usage: ip-world-map [options] log_file1 [logfile2] ...'
