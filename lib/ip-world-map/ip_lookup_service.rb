@@ -3,6 +3,14 @@ require 'yaml'
 
 class IpLookupService
 
+  def self.ip_for_host host
+    is_ip?(host) ? host : Socket.getaddrinfo(host, nil, Socket::AF_INET)[0][3] rescue nil
+  end
+
+  def self.is_ip? string
+    /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$/.match(string) != nil
+  end
+
   def initialize filename = nil
     @filename = filename || File.join(File.dirname(__FILE__), '..', '..', 'resources', 'coordinates.yml') 
     reset
@@ -16,7 +24,7 @@ class IpLookupService
 
   def coordinates_for_host host
     unless @host_coordinates[host]
-      @host_ips[host] ||= ip_for_host(host)
+      @host_ips[host] ||= IpLookupService.ip_for_host(host)
 
       response = Net::HTTP.get('api.hostip.info', "/get_html.php?position=true&ip=#{@host_ips[host]}")
       latitude  = response.match(/Latitude: (-?[0-9.]+)/)[1].to_f  rescue nil
@@ -25,14 +33,6 @@ class IpLookupService
     end
 
     @host_coordinates[host]
-  end
-
-  def ip_for_host host
-    is_ip?(host) ? host : Socket.getaddrinfo(host, nil)[0][3] rescue nil
-  end
-
-  def is_ip? string
-    /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$/.match(string) != nil
   end
 
   def save_coordinates
