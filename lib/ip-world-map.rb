@@ -2,6 +2,7 @@ require 'rubygems'
 
 require 'RMagick'
 
+require 'ip-world-map/ip_lookup_service'
 require 'ip-world-map/log_analyzer'
 require 'ip-world-map/information_drawer'
 require 'ip-world-map/apache_log_analyzer'
