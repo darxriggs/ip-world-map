@@ -11,7 +11,7 @@ class App
 
   attr_reader :options
 
-  def initialize(arguments, stdin)
+  def initialize arguments, stdin
     @arguments = arguments
     @stdin = stdin
 

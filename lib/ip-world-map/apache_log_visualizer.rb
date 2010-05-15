@@ -11,9 +11,8 @@ def detect_time_format times
   return '%b %d %Y'                                  # scale: days
 end
 
-def access_image(log_files)
+def access_image log_files
   analyzer = ApacheLogAnalyzer.new(log_files)
-  analyzer.load_cached_coordinates_from_file
   details = analyzer.analyze
   positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
 
@@ -22,9 +21,8 @@ def access_image(log_files)
   save_image image
 end
 
-def access_animation(log_files)
+def access_animation log_files
   analyzer = ApacheLogAnalyzer.new(log_files)
-  analyzer.load_cached_coordinates_from_file
   details = analyzer.analyze
   grouped_details = analyzer.group_by_time(details, $visualization_config.group_seconds)
 
@@ -47,7 +45,7 @@ def access_animation(log_files)
   create_animation
 end
 
-def save_image(image, frame_number = 0)
+def save_image image, frame_number = 0
   if $visualization_config.animate
     image.write "animation.#{'%09d' % frame_number}.bmp"
   else
@@ -60,7 +58,7 @@ def create_animation
   raise 'could not create the animation' unless success
 end
 
-def visualize(log_files)
+def visualize log_files
   if $visualization_config.animate
     access_animation(log_files)
   else

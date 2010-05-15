@@ -5,7 +5,7 @@ module FileUtils
     %w[.gz .Z].include? File.extname(filename)
   end
 
-  def self.open (filename, &block)
+  def self.open filename, &block
     if zipped? filename
       Zlib::GzipReader.open(filename, &block)
     else
