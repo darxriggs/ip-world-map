@@ -4,6 +4,7 @@ class LogAnalyzer
   def initialize *filenames
     @filenames = filenames.flatten.sort.uniq
     @ip_lookup_service = IpLookupService.new
+    @ip_lookup_service.load_coordinates
   end
 
   def details_from_line line

@@ -14,7 +14,6 @@ class IpLookupService
   def initialize filename = nil
     @filename = filename || File.join(File.dirname(__FILE__), '..', '..', 'resources', 'coordinates.yml') 
     reset
-    load_coordinates
   end
 
   def reset
