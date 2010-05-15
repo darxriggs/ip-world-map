@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), 'spec_helper.rb')
+require File.join(File.dirname(__FILE__), '..' , 'spec_helper.rb')
 
 describe TimeFormat do
   it 'should return a minute based time format for times within an hour' do

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require File.join(File.dirname(__FILE__), '..', 'spec_helper.rb')
 
 describe PointInTime do
   it 'should be initialized with either Integers and/or Floats' do
