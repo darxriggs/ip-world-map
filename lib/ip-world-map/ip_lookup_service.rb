@@ -1,4 +1,5 @@
 require 'net/http'
+require 'typhoeus'
 require 'yaml'
 
 class IpLookupService
@@ -13,17 +14,40 @@ class IpLookupService
     @host_ips = {}
   end
 
+  def coordinates_for_hosts hosts
+    uniq_hosts = hosts.uniq
+
+    uniq_hosts.each do |host|
+      @host_ips[host] ||= IPSocket.getaddress(host) rescue nil
+    end
+
+    hydra = Typhoeus::Hydra.new
+    uniq_hosts.each do |host|
+      request = Typhoeus::Request.new("http://api.hostip.info/get_html.php?position=true&ip=#{@host_ips[host]}")
+      request.on_complete do |response|
+        @host_coordinates[host] = extract_longitude_and_latitude(response.body)
+      end
+      hydra.queue(request)
+    end
+    hydra.run
+
+    @host_coordinates
+  end
+
   def coordinates_for_host host
     unless @host_coordinates[host]
-      @host_ips[host] ||= IPSocket.getaddr(host) rescue nil
-
+      @host_ips[host] ||= IPSocket.getaddress(host) rescue nil
       response = Net::HTTP.get('api.hostip.info', "/get_html.php?position=true&ip=#{@host_ips[host]}")
-      latitude  = response.match(/Latitude: (-?[0-9.]+)/)[1].to_f  rescue nil
-      longitude = response.match(/Longitude: (-?[0-9.]+)/)[1].to_f rescue nil
-      @host_coordinates[host] = [longitude, latitude]
+      @host_coordinates[host] = extract_longitude_and_latitude(response)
     end
 
     @host_coordinates[host]
+  end
+
+  def extract_longitude_and_latitude string
+    latitude  = string.match(/Latitude: (-?[0-9.]+)/)[1].to_f  rescue nil
+    longitude = string.match(/Longitude: (-?[0-9.]+)/)[1].to_f rescue nil
+    [longitude, latitude]
   end
 
   def save_coordinates

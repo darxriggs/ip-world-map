@@ -7,14 +7,6 @@ class LogAnalyzer
     @ip_lookup_service.load_coordinates
   end
 
-  def details_from_line line
-    host = extract_host_from_line(line)
-    time = extract_time_from_line(line)
-    coordinates = @ip_lookup_service.coordinates_for_host(host)
-
-    { :time => time, :host => host, :coordinates => coordinates }
-  end
-
   def analyze
     details = []
 
@@ -22,13 +14,25 @@ class LogAnalyzer
       puts filename
       FileUtils.open(filename) do |file|
         lines = file.readlines
-        lines.each do |line|
-          details << details_from_line(line)
-        end
+        lines.each{ |line| details << details_from_line(line) }
       end
     end
 
+    hosts = details.collect{|detail| detail[:host]}
+    coordinates = @ip_lookup_service.coordinates_for_hosts(hosts)
+
+    details.collect! do |detail|
+      detail[:coordinates] = coordinates[detail[:host]]
+      detail
+    end
+
     details
+  end
+
+  def details_from_line line
+    host = extract_host_from_line(line)
+    time = extract_time_from_line(line)
+    { :time => time, :host => host }
   end
 
   def calculate_oldest_time details
