@@ -20,11 +20,9 @@ class App
 
   def run
     if parsed_arguments? && arguments_valid?
-      puts "Start at #{DateTime.now}\n\n" if @options.verbose
       output_options if @options.verbose
       process_arguments
       process_command
-      puts "\nFinished at #{DateTime.now}" if @options.verbose
     else
       output_help
       exit 1
