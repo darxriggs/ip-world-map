@@ -12,9 +12,8 @@ class LogAnalyzer
 
     @filenames.each do |filename|
       puts filename
-      FileUtils.open(filename) do |file|
-        lines = file.readlines
-        lines.each{ |line| details << details_from_line(line) }
+      FileUtils.open(filename).each_line do |line|
+        details << details_from_line(line)
       end
     end
 
