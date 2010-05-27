@@ -10,8 +10,9 @@ class LogAnalyzer
   def analyze
     details = []
 
+    puts "\nReading files:" if $visualization_config.verbose
     @filenames.each do |filename|
-      puts filename
+      puts filename if $visualization_config.verbose
       FileUtils.open(filename).each_line do |line|
         details << details_from_line(line)
       end

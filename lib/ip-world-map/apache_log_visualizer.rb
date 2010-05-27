@@ -31,11 +31,12 @@ def access_animation log_files
   time_format = $visualization_config.time_format || detect_time_format(grouped_details.keys)
   frame_number = 0
 
+  puts "\nGenerating frames:" if $visualization_config.verbose
   grouped_details.sort.each do |time, details|
     frame_number += 1
     visualization.new_frame
     positions = details.collect{ |data| data[:coordinates] }.select{ |coords| coords.any? }
-    p [time, details.size, positions.size]
+    p [time, details.size, positions.size] if $visualization_config.verbose
     image = visualization.draw_positions(positions)
 
     InformationDrawer.new.draw_info(image, visualization, time.strftime(time_format))
@@ -54,8 +55,10 @@ def save_image image, frame_number = 0
 end
   
 def create_animation
-  success = system "ffmpeg -r #{$visualization_config.frames_per_second} -qscale 1 -y -i animation.%09d.bmp animation.#{$visualization_config.output_format}"
-  raise 'could not create the animation' unless success
+  puts "\nGenerating video:" if $visualization_config.verbose
+  output = `ffmpeg -r #{$visualization_config.frames_per_second} -qscale 1 -y -i animation.%09d.bmp animation.#{$visualization_config.output_format} 2>&1`
+  puts output if $visualization_config.verbose
+  raise 'could not create the animation' unless $?.exitstatus == 0
 end
 
 def visualize log_files
