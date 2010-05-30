@@ -181,7 +181,7 @@ class App
   def process_command
     # TODO - do whatever this app does
     #process_standard_input # [Optional]
-    visualize @log_files
+    ApacheLogVisualizer.new(@log_files).visualize
   end
 
   def process_standard_input
