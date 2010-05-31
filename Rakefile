@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'rubygems'
 require 'spec/version'
 require 'spec/rake/spectask'
