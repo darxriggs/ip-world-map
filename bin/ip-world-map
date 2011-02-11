@@ -136,7 +136,7 @@ class App
       raise 'invalid log file given' unless @log_files.all?{|file| File.readable? file}
       process_options
     rescue
-      puts 'Error: ' + $!
+      puts 'Error: ' + $!.to_s
       return false
     end
 
