@@ -21,10 +21,8 @@ class App
 
   def run
     if parsed_arguments? && arguments_valid?
-      puts "Start at #{DateTime.now}\n\n" if @options.verbose
       output_options if @options.verbose
       process_command
-      puts "\nFinished at #{DateTime.now}" if @options.verbose
     else
       output_help
       exit 1
@@ -175,7 +173,7 @@ class App
   end
 
   def process_command
-    visualize @log_files
+    ApacheLogVisualizer.new(@log_files).visualize
   end
 end
 

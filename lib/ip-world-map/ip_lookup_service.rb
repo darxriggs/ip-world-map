@@ -23,11 +23,13 @@ class IpLookupService
 
     hydra = Typhoeus::Hydra.new
     uniq_hosts.each do |host|
-      request = Typhoeus::Request.new("http://api.hostip.info/get_html.php?position=true&ip=#{@host_ips[host]}")
-      request.on_complete do |response|
-        @host_coordinates[host] = extract_longitude_and_latitude(response.body)
+      unless @host_coordinates[host]
+        request = Typhoeus::Request.new("http://api.hostip.info/get_html.php?position=true&ip=#{@host_ips[host]}")
+        request.on_complete do |response|
+          @host_coordinates[host] = extract_longitude_and_latitude(response.body)
+        end
+        hydra.queue(request)
       end
-      hydra.queue(request)
     end
     hydra.run
 

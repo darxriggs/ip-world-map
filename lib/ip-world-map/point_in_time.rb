@@ -9,7 +9,7 @@ class PointInTime
 
   def opacity_in_time time
     @time = time if time
-    @decay.value(@time)
+    opacity
   end
 
   def opacity
