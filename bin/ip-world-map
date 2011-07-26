@@ -47,7 +47,7 @@ class App
       :fill_dot_lifetime  => 15,
       :time_format        => nil,
       :group_seconds      => 24 * 1 * 60 * 60,
-      :output_format      => 'jpg',
+      :output_format      => 'png',
       :animate            => false
     })
   end
