@@ -1,7 +1,7 @@
 = IP World Map
 
 This tool can be used to visualize web access logfiles.
-It performs geo-location resolution on the IPs and can generate:
+It performs geo-location resolution on the IPs (using api.hostip.info) and can generate:
 * a fixed image
 * an animated image
 * a video
@@ -37,7 +37,7 @@ The script generates an animated gif with 640x480 and 25fps (default settings).
         --fill-dot-opacity VALUE     range 0.0-1.0 (eg.: 0.0, 0.5, 1.0)
         --fill-dot-lifetime VALUE    (eg.: 15)
         --time-slot VALUE            real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
-        --output-format VALUE        one out of many image formats (eg.: png, jpg, gif) or video formats: avi, mpg, mp4
+        --output-format VALUE        image format (e.g.: gif, jpg, png) or video format (avi, mpg, mp4)
         --[no-]animate               generate an image or a video
 
 == TODO
@@ -50,7 +50,7 @@ René Scheibe
 
 == License
 
-Copyright (C) 2010 René Scheibe <rene.scheibe@gmail.com>
+Copyright (C) 2010-2011 René Scheibe <rene.scheibe@gmail.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -65,3 +65,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
