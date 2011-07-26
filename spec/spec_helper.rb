@@ -1,11 +1,5 @@
-begin
-  require 'spec'
-rescue LoadError
-  require 'rubygems'
-  gem 'rspec'
-  require 'spec'
-end
+lib_path = File.join(File.dirname(__FILE__), '..', 'lib')
+$LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
 
-$:.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'ip-world-map'
 

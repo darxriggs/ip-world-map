@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'spec_helper.rb')
+require 'spec_helper'
 
 describe Decay do
   it 'should be initialized with either Integers and/or Floats' do
