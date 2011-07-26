@@ -11,15 +11,6 @@ It performs geo-location resolution on the IPs (using api.hostip.info) and can g
 Install [Gemcutter](http://gemcutter.org) then execute:
     sudo gem install ip-world-map
 
-== Supported platforms
-
-Tested with Ruby 1.8.7, 1.9.1 under *nix
-
-== Examples
-
-The script generates an animated gif with 640x480 and 25fps (default settings).
-    ip-world-map /var/log/apache2/access.log*
-
 == Usage
 
     ip-world-map [options] logfile1 [logfile2] ...
@@ -39,6 +30,18 @@ The script generates an animated gif with 640x480 and 25fps (default settings).
         --time-slot VALUE            real life time visualized per video frame (eg.: 10secs, 1min, 99hours, 1day)
         --output-format VALUE        image format (e.g.: gif, jpg, png) or video format (avi, mpg, mp4)
         --[no-]animate               generate an image or a video
+
+== Examples
+
+Generate PNG image. That's the default output.
+    ip-world-map /var/log/apache2/access.log*
+
+Generate AVI video with 640x480 and 25fps (default settings).
+    ip-world-map --animate --output-format avi /var/log/apache2/access.log*
+
+== Supported platforms
+
+Tested with Ruby 1.8.7, 1.9.1 under *nix
 
 == Author
 
