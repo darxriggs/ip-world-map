@@ -1,6 +1,4 @@
-#coordinates_home = [11.6220338, 48.1276458] # Munich
-#coordinates_home = [13.4114943, 52.5234802] # Berlin
-#coordinates_home = [12.3387844, 45.4343363] # Venezia
+require 'RMagick'
 
 def detect_time_format times
   some_samples = times.sort[0..99]

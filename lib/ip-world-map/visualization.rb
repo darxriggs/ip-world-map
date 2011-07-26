@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'RMagick'
 
 class Visualization

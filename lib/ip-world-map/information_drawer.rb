@@ -1,3 +1,5 @@
+require 'RMagick'
+
 # Draws the timestamp.
 class InformationDrawer
 
