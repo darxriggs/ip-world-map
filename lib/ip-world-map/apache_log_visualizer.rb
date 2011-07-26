@@ -31,7 +31,7 @@ class ApacheLogVisualizer
 
     animation = Magick::ImageList.new
     visualization = Visualization.new
-    time_format = $visualization_config.time_format || detect_time_format(grouped_details.keys)
+    time_format = $visualization_config.time_format || ApacheLogVisualizer.detect_time_format(grouped_details.keys)
     frame_number = 0
 
     puts "\nGenerating frames:" if $visualization_config.verbose
