@@ -40,10 +40,6 @@ The script generates an animated gif with 640x480 and 25fps (default settings).
         --output-format VALUE        image format (e.g.: gif, jpg, png) or video format (avi, mpg, mp4)
         --[no-]animate               generate an image or a video
 
-== TODO
-
-* Cache/parallelize IP geo-location lookups. ATTENTION: For many IPs generating an animation can take quite long at the moment due to the used webservice.
-
 == Author
 
 René Scheibe
