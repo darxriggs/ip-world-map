@@ -29,6 +29,7 @@ spec = Gem::Specification.new do |s|
 
   s.requirements = ['ImageMagick (used by rmagick)', 'ffmpeg (only for animations)']
   s.add_runtime_dependency('rmagick', '~> 2.13', '>= 2.13.1')
+  s.add_runtime_dependency('typhoeus', '~> 0.2', '>= 0.2.1')
   s.add_development_dependency('rspec', '~> 2.6', '>= 2.6.0')
 end
 
