@@ -16,7 +16,7 @@ spec = Gem::Specification.new do |s|
   s.summary = 'A tool to generate images/videos of user locations based on Apache log files.'
   s.name = 'ip-world-map'
   s.version = '1.0.0'
-  s.license = 'GPL-2'
+  s.license = 'GPL-2.0'
   s.executables = ['ip-world-map']
   s.files = FileList['{lib,spec}/**/*'].to_a +
             ['Rakefile'] +
