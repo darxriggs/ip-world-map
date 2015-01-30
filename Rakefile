@@ -38,7 +38,7 @@ end
 
 desc 'Install gem locally'
 task :install_gem => :package do
-  `sudo gem install pkg/*.gem --no-ri --no-rdoc`
+  `gem install pkg/*.gem --no-ri --no-rdoc`
 end
 
 task :default => :install_gem

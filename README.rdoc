@@ -9,7 +9,7 @@ It performs geo-location resolution on the IPs (using api.hostip.info) and can g
 == Installation
 
 Install [Gemcutter](http://gemcutter.org) then execute:
-    sudo gem install ip-world-map
+    gem install ip-world-map
 
 == Usage
 
