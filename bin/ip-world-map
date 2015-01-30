@@ -8,7 +8,7 @@ require 'ip-world-map'
 require 'RMagick'
 
 class App
-  VERSION = '0.0.1'
+  VERSION = '1.0.1'
 
   attr_reader :options
 

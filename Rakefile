@@ -15,7 +15,7 @@ spec = Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.8.7'
   s.summary = 'A tool to generate images/videos of user locations based on Apache log files.'
   s.name = 'ip-world-map'
-  s.version = '1.0.0'
+  s.version = '1.0.1'
   s.license = 'GPL-2.0'
   s.executables = ['ip-world-map']
   s.files = FileList['{lib,spec}/**/*'].to_a +
